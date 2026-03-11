@@ -1,10 +1,7 @@
+import Dashboard from "./pages/Dashboard";
+
 function App() {
-  return (
-    <div>
-      <h1>GiferJif</h1>
-      <p>Frontend development has started 🚀</p>
-    </div>
-  );
+  return <Dashboard />;
 }
 
 export default App;
