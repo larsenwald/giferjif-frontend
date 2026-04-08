@@ -25,6 +25,7 @@ function Dashboard() {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasSearched, setHasSearched] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -41,16 +42,33 @@ function Dashboard() {
 
     async function loadGifs() {
       setIsLoading(true);
+      setErrorMessage("");
 
-      const results = await searchGifs(debouncedQuery);
+      try {
+        const results = await searchGifs(debouncedQuery);
 
-      if (!isActive) {
-        return;
+        if (!isActive) {
+          return;
+        }
+
+        setGifs(results);
+        setHasSearched(debouncedQuery.trim().length > 0);
+      } catch (error) {
+        if (!isActive) {
+          return;
+        }
+
+        console.error("Failed to load GIFs.", error);
+        setGifs([]);
+        setHasSearched(debouncedQuery.trim().length > 0);
+        setErrorMessage("Could not load GIFs right now. Please try again.");
+      } finally {
+        if (!isActive) {
+          return;
+        }
+
+        setIsLoading(false);
       }
-
-      setGifs(results);
-      setIsLoading(false);
-      setHasSearched(debouncedQuery.trim().length > 0);
     }
 
     loadGifs();
@@ -143,6 +161,8 @@ function Dashboard() {
         <section className="dashboard__content">
           {isLoading ? (
             <div className="dashboard__message-card">Loading GIFs...</div>
+          ) : errorMessage ? (
+            <div className="dashboard__message-card">{errorMessage}</div>
           ) : filteredGifs.length > 0 ? (
             <GifGrid
               gifs={filteredGifs}

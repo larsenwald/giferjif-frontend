@@ -82,37 +82,29 @@ export async function searchGifs(query = "") {
     return fallbackGifs;
   }
 
-  try {
-    const headers = API_KEY
-      ? {
-          "Content-Type": "application/json",
-          "x-api-key": API_KEY,
-        }
-      : {
-          "Content-Type": "application/json",
-        };
-
-    const response = await fetch(
-      `${API_BASE_URL}/gifs/search?q=${encodeURIComponent(trimmedQuery)}`,
-      {
-        method: "GET",
-        headers,
+  const headers = API_KEY
+    ? {
+        "Content-Type": "application/json",
+        "x-api-key": API_KEY,
       }
-    );
+    : {
+        "Content-Type": "application/json",
+      };
 
-    if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`);
+  const response = await fetch(
+    `${API_BASE_URL}/gifs/search?q=${encodeURIComponent(trimmedQuery)}`,
+    {
+      method: "GET",
+      headers,
     }
+  );
 
-    const data = await response.json();
-    const results = Array.isArray(data) ? data : data.results || data.gifs || [];
-
-    return results.map(normalizeGif);
-  } catch (error) {
-    console.error("GIF search failed. Falling back to placeholder data.", error);
-
-    return fallbackGifs.filter((gif) =>
-      gif.title.toLowerCase().includes(trimmedQuery.toLowerCase())
-    );
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
   }
+
+  const data = await response.json();
+  const results = Array.isArray(data) ? data : data.results || data.gifs || [];
+
+  return results.map(normalizeGif);
 }
