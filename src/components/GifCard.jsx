@@ -3,22 +3,57 @@ import "../styles/gifCard.css";
 
 function GifCard({ gif, isFavorited, onFavoriteToggle }) {
   const [copied, setCopied] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
-  function handleCopyClick() {
-    setCopied(true);
+  async function handleCopyClick() {
+    const textToCopy = gif.copyUrl || gif.imageUrl || gif.title;
 
-    window.setTimeout(() => {
-      setCopied(false);
-    }, 1400);
+    try {
+      await navigator.clipboard.writeText(textToCopy);
+      setCopied(true);
+
+      window.setTimeout(() => {
+        setCopied(false);
+      }, 1400);
+    } catch (error) {
+      console.error("Failed to copy GIF link.", error);
+    }
   }
 
   return (
     <article className="gif-card">
-      <div
-        className="gif-card__placeholder"
-        aria-label={`${gif.title} preview placeholder`}
-      >
-        <span className="gif-card__placeholder-text">GIF PREVIEW</span>
+      <div className="gif-card__media">
+        {!imageError && gif.imageUrl ? (
+          <>
+            {!imageLoaded && (
+              <div className="gif-card__placeholder" aria-hidden="true">
+                <span className="gif-card__placeholder-text">LOADING...</span>
+              </div>
+            )}
+
+            <img
+              className={`gif-card__image ${
+                imageLoaded ? "gif-card__image--visible" : ""
+              }`}
+              src={gif.imageUrl}
+              alt={gif.title}
+              loading="lazy"
+              onLoad={() => setImageLoaded(true)}
+              onError={() => {
+                setImageError(true);
+                setImageLoaded(false);
+              }}
+            />
+          </>
+        ) : (
+          <div
+            className="gif-card__placeholder"
+            aria-label={`${gif.title} preview unavailable`}
+          >
+            <span className="gif-card__placeholder-text">NO PREVIEW</span>
+          </div>
+        )}
       </div>
 
       <div className="gif-card__content">
@@ -33,7 +68,7 @@ function GifCard({ gif, isFavorited, onFavoriteToggle }) {
             onClick={handleCopyClick}
             aria-label={`Copy ${gif.title}`}
           >
-            {copied ? "COPIED!" : "COPY"}
+            {copied ? "COPIED!" : "COPY LINK"}
           </button>
 
           <button
