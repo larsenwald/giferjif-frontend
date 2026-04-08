@@ -7,7 +7,20 @@ import "../styles/dashboard.css";
 function Dashboard() {
   const [query, setQuery] = useState("");
   const [gifs, setGifs] = useState([]);
-  const [favoriteIds, setFavoriteIds] = useState([]);
+  const [favoriteIds, setFavoriteIds] = useState(() => {
+    const savedFavorites = localStorage.getItem("favoriteGifIds");
+
+    if (!savedFavorites) {
+      return [];
+    }
+
+    try {
+      return JSON.parse(savedFavorites);
+    } catch (error) {
+      console.error("Failed to load favorite GIFs from local storage.", error);
+      return [];
+    }
+  });
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasSearched, setHasSearched] = useState(false);
@@ -35,6 +48,10 @@ function Dashboard() {
       isActive = false;
     };
   }, [query]);
+
+  useEffect(() => {
+    localStorage.setItem("favoriteGifIds", JSON.stringify(favoriteIds));
+  }, [favoriteIds]);
 
   const filteredGifs = useMemo(() => {
     if (!showFavoritesOnly) {
