@@ -6,6 +6,7 @@ import "../styles/dashboard.css";
 
 function Dashboard() {
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [gifs, setGifs] = useState([]);
   const [favoriteIds, setFavoriteIds] = useState(() => {
     const savedFavorites = localStorage.getItem("favoriteGifIds");
@@ -26,12 +27,22 @@ function Dashboard() {
   const [hasSearched, setHasSearched] = useState(false);
 
   useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 300);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [query]);
+
+  useEffect(() => {
     let isActive = true;
 
     async function loadGifs() {
       setIsLoading(true);
 
-      const results = await searchGifs(query);
+      const results = await searchGifs(debouncedQuery);
 
       if (!isActive) {
         return;
@@ -39,7 +50,7 @@ function Dashboard() {
 
       setGifs(results);
       setIsLoading(false);
-      setHasSearched(query.trim().length > 0);
+      setHasSearched(debouncedQuery.trim().length > 0);
     }
 
     loadGifs();
@@ -47,7 +58,7 @@ function Dashboard() {
     return () => {
       isActive = false;
     };
-  }, [query]);
+  }, [debouncedQuery]);
 
   useEffect(() => {
     localStorage.setItem("favoriteGifIds", JSON.stringify(favoriteIds));
