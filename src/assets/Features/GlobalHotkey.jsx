@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 
+<<<<<<< HEAD
 export default function SpotlightModal() {
+=======
+export default function GlobalHotkey() {
+>>>>>>> a65bcdb87fcc667e13be557f6412de280ff9120f
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const modalRef = useRef();

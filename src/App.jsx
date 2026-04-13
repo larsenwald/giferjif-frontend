@@ -4,8 +4,8 @@ import GlobalHotkey from "./assets/Features/GlobalHotkey";
 function App() {
   return (
     <>
-      <Dashboard />
       <GlobalHotkey />
+      <Dashboard />
     </>
   );
 }
