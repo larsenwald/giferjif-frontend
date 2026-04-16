@@ -8,7 +8,10 @@ function Header({ favoritesCount, showFavoritesOnly, onToggleFavorites }) {
       <div className="header__spacer" />
 
       <h1 className="header__title">
-        GIFER<span className="header__title-accent">JIF</span>
+                GIFER<span className="header__title-accent">JIF</span>
+                {showFavoritesOnly && (
+                    <span className="favorites--title">FAVORITES ♥</span>
+                )}
       </h1>
 
       <button
