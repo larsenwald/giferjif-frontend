@@ -22,6 +22,24 @@
   text-transform: uppercase;
   color: var(--color-black);
 }
+/* on FAVORITES button clicked */
+.favorites--title{
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+
+  line-height: 1;          /* tighten vertical spacing */
+  display: inline-block;
+
+  justify-self: left;
+  padding: 0.3rem 0.6rem;
+  border-radius: 8px; /* rounded corners */
+  color: var(--color-white);
+  background-color: var(--color-red);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+
+
+}
 
 .header__title-accent {
   color: var(--color-blue);
@@ -61,6 +79,25 @@
   font-size: 1rem;
   line-height: 1;
 }
+
+/* START: Favorites header style while in FAVORITES page */
+
+.header--favorites {
+  background-color: var(--color-white); 
+  color: var(--color-white);
+
+}
+.header--favorites .header__title {
+  color: var(--color-red);
+  display: flex;
+  justify-content: flex-start;
+}
+.header--favorites .header__title-accent{
+  color: var(--color-black);
+  display: flex;
+  justify-content: flex-start;
+}
+/* END FAVORITES STYLE */
 
 @media (max-width: 768px) {
   .header {
