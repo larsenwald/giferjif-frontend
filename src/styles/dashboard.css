@@ -113,6 +113,33 @@
   line-height: 1.4;
 }
 
+/* FAVORITES SECTION CONTENT */
+.dashboard--favorites {
+  background-color: var(--color-red);
+}
+
+/* make the grid columns bigger/fewer in favorites */
+.dashboard--favorites .gif-grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+.dashboard--favorites .dashboard__search-section {
+  display: flex;
+  justify-content: flex-start;
+
+}
+
+.dashboard--favorites .dashboard__search-stack {
+  width: 420px;
+
+}
+
+/* change the status text style */
+.dashboard--favorites .dashboard__status {
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 1.2rem;
+}
+
 @media (max-width: 768px) {
   .dashboard {
     min-height: auto;
