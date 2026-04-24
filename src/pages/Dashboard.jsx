@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import Header from "../components/Header";
 import GifGrid from "../components/GifGrid";
-import { searchGifs } from "../services/gifApi";
+import { getTrendingGifs, recordGifUsage, searchGifs } from "../services/gifApi";
 import "../styles/dashboard.css";
 
 function Dashboard() {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [gifs, setGifs] = useState([]);
+  const [searchId, setSearchId] = useState(null);
+  const [viewMode, setViewMode] = useState("search");
   const [favoriteIds, setFavoriteIds] = useState(() => {
     const savedFavorites = localStorage.getItem("favoriteGifIds");
 
@@ -45,14 +47,16 @@ function Dashboard() {
       setErrorMessage("");
 
       try {
-        const results = await searchGifs(debouncedQuery);
+        const data = await searchGifs(debouncedQuery);
 
         if (!isActive) {
           return;
         }
 
-        setGifs(results);
+        setGifs(data.results);
         setHasSearched(debouncedQuery.trim().length > 0);
+        setSearchId(data.searchId);
+        setViewMode("search");
       } catch (error) {
         if (!isActive) {
           return;
@@ -60,6 +64,7 @@ function Dashboard() {
 
         console.error("Failed to load GIFs.", error);
         setGifs([]);
+        setSearchId(null);
         setHasSearched(debouncedQuery.trim().length > 0);
         setErrorMessage("Could not load GIFs right now. Please try again.");
       } finally {
@@ -104,17 +109,72 @@ function Dashboard() {
     setShowFavoritesOnly((currentValue) => !currentValue);
   }
 
-  function handleClearSearch() {
-    setQuery("");
+async function handleClearSearch() {
+  setQuery("");
+  setDebouncedQuery("");
+  setViewMode("search");
+  setSearchId(null);
+  setHasSearched(false);
+  setShowFavoritesOnly(false);
+  setErrorMessage("");
+  setIsLoading(true);
+
+  try {
+    const data = await searchGifs("");
+    setGifs(data.results);
+  } catch (error) {
+    console.error("Failed to reload main GIFs.", error);
+    setGifs([]);
+    setErrorMessage("Could not load GIFs right now. Please try again.");
+  } finally {
+    setIsLoading(false);
   }
+}
+
+  async function handleGifCopy(gifId) {
+  if (!searchId) {
+    return;
+  }
+
+  try {
+    await recordGifUsage(gifId, searchId);
+  } catch (error) {
+    console.error("Failed to record GIF usage.", error);
+  }
+}
+
+async function handleLoadTrending() {
+  setIsLoading(true);
+  setErrorMessage("");
+  setSearchId(null);
+  setHasSearched(false);
+  setShowFavoritesOnly(false);
+
+  try {
+    const trendingResults = await getTrendingGifs();
+    setGifs(trendingResults);
+    setViewMode("trending");
+    setQuery("");
+  } catch (error) {
+    console.error("Failed to load trending GIFs.", error);
+    setGifs([]);
+    setErrorMessage("Could not load trending GIFs right now. Please try again.");
+  } finally {
+    setIsLoading(false);
+  }
+}
 
   const statusText = showFavoritesOnly
     ? `Showing ${filteredGifs.length} favorite${
         filteredGifs.length === 1 ? "" : "s"
       }`
-    : `Showing ${filteredGifs.length} GIF${
+    : viewMode === "trending"
+    ? `Showing ${filteredGifs.length} trending GIF${
         filteredGifs.length === 1 ? "" : "s"
-      }`;
+      }`
+    : `Showing ${filteredGifs.length} GIF${
+      filteredGifs.length === 1 ? "" : "s"
+    }`;
 
   return (
     <div className="app-shell">
@@ -144,6 +204,17 @@ function Dashboard() {
 
             <div className="dashboard__toolbar">
               <p className="dashboard__status">{statusText}</p>
+              <button
+                className="dashboard__clear-button"
+                type="button"
+                onClick={
+                  viewMode === "trending"
+                    ? handleClearSearch
+                    : handleLoadTrending
+                }
+              >
+                {viewMode === "trending" ? "Back to main page" : "Trending"}
+              </button>
 
               {query && (
                 <button
@@ -168,6 +239,7 @@ function Dashboard() {
               gifs={filteredGifs}
               favoriteIds={favoriteIds}
               onFavoriteToggle={handleFavoriteToggle}
+              onGifCopy={handleGifCopy}
             />
           ) : (
             <div className="dashboard__message-card">

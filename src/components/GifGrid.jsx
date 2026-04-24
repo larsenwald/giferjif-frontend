@@ -1,7 +1,7 @@
 import GifCard from "./GifCard";
 import "../styles/gifGrid.css";
 
-function GifGrid({ gifs, favoriteIds, onFavoriteToggle }) {
+function GifGrid({ gifs, favoriteIds, onFavoriteToggle, onGifCopy }) {
   return (
     <section className="gif-grid">
       {gifs.map((gif) => (
@@ -10,6 +10,7 @@ function GifGrid({ gifs, favoriteIds, onFavoriteToggle }) {
           gif={gif}
           isFavorited={favoriteIds.includes(gif.id)}
           onFavoriteToggle={onFavoriteToggle}
+          onGifCopy={onGifCopy}
         />
       ))}
     </section>

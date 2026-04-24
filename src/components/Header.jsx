@@ -26,4 +26,3 @@ function Header({ favoritesCount, showFavoritesOnly, onToggleFavorites }) {
 }
 
 export default Header;
-

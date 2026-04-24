@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "../styles/gifCard.css";
 
-function GifCard({ gif, isFavorited, onFavoriteToggle }) {
+function GifCard({ gif, isFavorited, onFavoriteToggle, onGifCopy }) {
   const [copied, setCopied] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -27,6 +27,11 @@ function GifCard({ gif, isFavorited, onFavoriteToggle }) {
 
     try {
       await navigator.clipboard.writeText(textToCopy);
+
+      if (onGifCopy) {
+        await onGifCopy(gif.id);
+      }
+
       setCopied(true);
 
       window.setTimeout(() => {
