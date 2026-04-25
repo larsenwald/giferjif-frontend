@@ -66,8 +66,6 @@ function GifCard({
       window.clearTimeout(timeoutRef.current);
     }
   }
-
-
   
   return (
     <article className="gif-card">

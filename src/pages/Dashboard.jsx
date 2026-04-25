@@ -26,9 +26,10 @@ function Dashboard() {
       return [];
     }
   });
+
   const favoriteIds = useMemo(
-  () => favoriteGifs.map((gif) => gif.id),
-  [favoriteGifs]
+    () => favoriteGifs.map((gif) => gif.id),
+    [favoriteGifs]
   );
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
