@@ -56,7 +56,7 @@ const fallbackGifs = [
 
 function normalizeGif(rawGif, index) {
   return {
-    id: rawGif.id ?? String(index),
+    id: rawGif.id ?? rawGif.gif_id ?? String(index),
     title: rawGif.title ?? "Untitled GIF",
     imageUrl:
       rawGif.imageUrl ??

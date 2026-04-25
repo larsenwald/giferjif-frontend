@@ -12,20 +12,24 @@ function Dashboard() {
   const [viewMode, setViewMode] = useState("search");
   const [offset, setOffset] = useState(0);
   const [hasMoreResults, setHasMoreResults] = useState(false);
-  const [favoriteIds, setFavoriteIds] = useState(() => {
-    const savedFavorites = localStorage.getItem("favoriteGifIds");
+  const [favoriteGifs, setFavoriteGifs] = useState(() => {
+    const saved = localStorage.getItem("favoriteGifs");
 
-    if (!savedFavorites) {
+    if (!saved) {
       return [];
     }
 
     try {
-      return JSON.parse(savedFavorites);
+      return JSON.parse(saved);
     } catch (error) {
       console.error("Failed to load favorite GIFs from local storage.", error);
       return [];
     }
   });
+  const favoriteIds = useMemo(
+  () => favoriteGifs.map((gif) => gif.id),
+  [favoriteGifs]
+  );
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -89,24 +93,30 @@ function Dashboard() {
   }, [debouncedQuery]);
 
   useEffect(() => {
-    localStorage.setItem("favoriteGifIds", JSON.stringify(favoriteIds));
-  }, [favoriteIds]);
+    localStorage.setItem("favoriteGifs", JSON.stringify(favoriteGifs));
+  }, [favoriteGifs]);
 
   const filteredGifs = useMemo(() => {
     if (!showFavoritesOnly) {
       return gifs;
     }
 
-    return gifs.filter((gif) => favoriteIds.includes(gif.id));
-  }, [favoriteIds, gifs, showFavoritesOnly]);
+    return favoriteGifs;
+  }, [favoriteGifs, gifs, showFavoritesOnly]);
 
-  function handleFavoriteToggle(gifId) {
-    setFavoriteIds((currentFavorites) => {
-      if (currentFavorites.includes(gifId)) {
-        return currentFavorites.filter((id) => id !== gifId);
+  function handleFavoriteToggle(gif) {
+    setFavoriteGifs((currentFavorites) => {
+      const alreadyFavorited = currentFavorites.some(
+        (favoriteGif) => favoriteGif.id === gif.id
+      );
+
+      if (alreadyFavorited) {
+        return currentFavorites.filter(
+          (favoriteGif) => favoriteGif.id !== gif.id
+        );
       }
 
-      return [...currentFavorites, gifId];
+      return [...currentFavorites, gif];
     });
   }
 
