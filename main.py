@@ -1,12 +1,16 @@
 import os
 import sys
 import threading
+import ctypes
 import webview
 import pystray
 import keyboard
-import tkinter as tk
+import win32gui
+import win32con
 from PIL import Image, ImageDraw, ImageFont
 
+
+# ── Tray icon ─────────────────────────────────────────────────────────────────
 
 def create_tray_icon():
     size = 64
@@ -51,15 +55,6 @@ def toggle_window(icon, item):
         window_visible = True
     update_tray_menu()
 
-def get_center_coords(win_width, win_height):
-    root = tk.Tk()
-    root.withdraw()
-    screen_w = root.winfo_screenwidth()
-    screen_h = root.winfo_screenheight()
-    root.destroy()
-    x = (screen_w - win_width) // 2
-    y = (screen_h - win_height) // 2
-    return x, y
 
 def quit_app(icon, item):
     icon.stop()
@@ -91,6 +86,30 @@ spotlight_window = None
 spotlight_lock = threading.Lock()
 
 
+def get_center_coords(win_width, win_height):
+    import tkinter as tk
+    root = tk.Tk()
+    root.withdraw()
+    screen_w = root.winfo_screenwidth()
+    screen_h = root.winfo_screenheight()
+    root.destroy()
+    x = (screen_w - win_width) // 2
+    y = (screen_h - win_height) // 2
+    return x, y
+
+
+def force_focus_spotlight():
+    hwnd = win32gui.FindWindow(None, "GiferJif Spotlight")
+    if not hwnd:
+        return
+    ALT = 0x12
+    KEYEVENTF_EXTENDEDKEY = 0x0001
+    KEYEVENTF_KEYUP = 0x0002
+    ctypes.windll.user32.keybd_event(ALT, 0, KEYEVENTF_EXTENDEDKEY, 0)
+    win32gui.SetForegroundWindow(hwnd)
+    ctypes.windll.user32.keybd_event(ALT, 0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0)
+
+
 class SpotlightApi:
     def close_spotlight(self):
         close_spotlight()
@@ -111,7 +130,6 @@ def open_spotlight():
             return
 
         html_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "spotlight.html")
-
         x, y = get_center_coords(660, 600)
 
         spotlight_window = webview.create_window(
@@ -123,7 +141,7 @@ def open_spotlight():
             y=y,
             resizable=False,
             frameless=True,
-            on_top=True,
+            focus=True,
             js_api=SpotlightApi(),
         )
 
@@ -133,6 +151,7 @@ def open_spotlight():
                 spotlight_window = None
 
         spotlight_window.events.closed += on_spotlight_closed
+        spotlight_window.events.loaded += lambda: force_focus_spotlight()
 
 
 def hotkey_handler():
@@ -160,7 +179,7 @@ if __name__ == "__main__":
 
     window.events.closing += on_closing
 
-    keyboard.add_hotkey("ctrl+shift+g", hotkey_handler)
+    keyboard.add_hotkey("ctrl+alt+shift+g", hotkey_handler)
 
     threading.Thread(target=run_tray, daemon=True).start()
 
