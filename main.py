@@ -4,6 +4,7 @@ import threading
 import webview
 import pystray
 import keyboard
+import tkinter as tk
 from PIL import Image, ImageDraw, ImageFont
 
 
@@ -50,6 +51,15 @@ def toggle_window(icon, item):
         window_visible = True
     update_tray_menu()
 
+def get_center_coords(win_width, win_height):
+    root = tk.Tk()
+    root.withdraw()
+    screen_w = root.winfo_screenwidth()
+    screen_h = root.winfo_screenheight()
+    root.destroy()
+    x = (screen_w - win_width) // 2
+    y = (screen_h - win_height) // 2
+    return x, y
 
 def quit_app(icon, item):
     icon.stop()
@@ -102,11 +112,15 @@ def open_spotlight():
 
         html_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "spotlight.html")
 
+        x, y = get_center_coords(660, 600)
+
         spotlight_window = webview.create_window(
             title="GiferJif Spotlight",
             url=f"file:///{html_path}",
             width=660,
             height=600,
+            x=x,
+            y=y,
             resizable=False,
             frameless=True,
             on_top=True,
