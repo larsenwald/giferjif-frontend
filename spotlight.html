@@ -55,6 +55,10 @@
         window.pywebview.api.close_spotlight();
       }
     }
+    document.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    });
   </script>
 </body>
 </html>
