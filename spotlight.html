@@ -6,66 +6,406 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
+    html, body {
       width: 100vw;
-      height: 100vh;
-      background: #ffe500;
-      border: 3px solid #000;
+      height: auto;
+      overflow: hidden;
+      background: #1a1a1a;
       font-family: Arial, Helvetica, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
+    /* ── Search bar ── */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 18px;
+      height: 56px;
+      flex-shrink: 0;
+    }
+
+    .search-icon {
+      font-size: 1.3rem;
+      color: #555;
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    .search-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      caret-color: #ffe500;
+    }
+
+    .search-input::placeholder { color: #444; }
+
     .close-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      width: 32px;
-      height: 32px;
-      border: 3px solid #000;
-      background: #fff;
-      font-size: 1rem;
+      flex-shrink: 0;
+      width: 26px;
+      height: 26px;
+      border: 2px solid #333;
+      background: transparent;
+      color: #666;
+      font-size: 0.7rem;
       font-weight: 900;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: border-color 0.1s, color 0.1s;
     }
 
-    .close-btn:hover {
-      background: #ff5a5f;
-      color: #fff;
+    .close-btn:hover { border-color: #ff5a5f; color: #ff5a5f; }
+
+    /* ── Divider ── */
+    .divider {
+      height: 0;
+      background: #2a2a2a;
+      transition: height 0.1s;
     }
 
-    p {
-      font-size: 1.5rem;
+    .divider.visible { height: 2px; }
+
+    /* ── Results ── */
+    .results {
+      display: none;
+      padding: 12px;
+      max-height: 480px;
+      overflow-y: auto;
+    }
+
+    .results.visible { display: block; }
+
+    .status {
+      font-size: 0.72rem;
       font-weight: 900;
       text-transform: uppercase;
+      color: #444;
+      letter-spacing: 0.06em;
+      padding: 0 2px 10px;
+    }
+
+    /* ── Grid ── */
+    .gif-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    /* ── Card ── */
+    .gif-card {
+      border: 2px solid #2a2a2a;
+      background: #222;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.12s, transform 0.12s;
+    }
+
+    .gif-card:hover { border-color: #ffe500; transform: translateY(-2px); }
+
+    .gif-card__media {
+      width: 100%;
+      height: 100px;
+      background: #2a2a2a;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .gif-card__img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 0.15s;
+      position: absolute;
+      inset: 0;
+    }
+
+    .gif-card__img.loaded { opacity: 1; }
+
+    .gif-card__placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      font-weight: 800;
+      color: #444;
+      background: repeating-linear-gradient(
+        135deg, #222, #222 8px, #272727 8px, #272727 16px
+      );
+    }
+
+    .gif-card__actions {
+      display: flex;
+      gap: 4px;
+      padding: 6px;
+    }
+
+    .gif-card__btn {
+      flex: 1;
+      padding: 5px 2px;
+      border: 2px solid #333;
+      font-size: 0.6rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: border-color 0.1s, background 0.1s;
+      letter-spacing: 0.02em;
+    }
+
+    .gif-card__btn--paste {
+      background: #ffe500;
+      color: #000;
+      border-color: #ffe500;
+    }
+
+    .gif-card__btn--paste:hover { background: #ffd000; border-color: #ffd000; }
+
+    .gif-card__btn--copy {
+      background: transparent;
+      color: #888;
+    }
+
+    .gif-card__btn--copy:hover { border-color: #666; color: #fff; }
+
+    .gif-card__btn--copied {
+      background: #11a34a !important;
+      border-color: #11a34a !important;
+      color: #fff !important;
     }
   </style>
 </head>
 <body>
-  <button class="close-btn" onclick="dismiss()">✕</button>
-  <p>Spotlight here</p>
+  <div class="search-bar">
+    <span class="search-icon">⌕</span>
+    <input
+      class="search-input"
+      id="searchInput"
+      type="text"
+      placeholder="Search GIFs..."
+      autocomplete="off"
+    />
+    <button class="close-btn" onclick="dismiss()">✕</button>
+  </div>
+
+  <div class="divider" id="divider"></div>
+  <div class="results" id="results">
+    <div class="status" id="status"></div>
+    <div class="gif-grid" id="gifGrid"></div>
+  </div>
 
   <script>
+    const API_BASE = 'http://5.78.197.194:8000';
+    const API_KEY  = 'test-key-534242958405389';
+    const SEARCH_BAR_H = 56;
+    const MAX_H = 560;
+
+    let debounceTimer = null;
+    let currentQuery = '';
+
+    document.getElementById('searchInput').focus();
+
+    // ── Dismiss ──────────────────────────────────────────────────────────────
+
     function dismiss() {
       if (window.pywebview?.api?.close_spotlight) {
         window.pywebview.api.close_spotlight();
       }
     }
-    document.addEventListener('mousedown', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
+
+    // ── Resize ───────────────────────────────────────────────────────────────
+
+    function snapHeight() {
+      if (!window.pywebview?.api?.resize) return;
+      const h = Math.min(document.body.scrollHeight, MAX_H);
+      window.pywebview.api.resize(document.documentElement.scrollWidth, h);
+    }
+
+    function collapse() {
+      document.getElementById('divider').classList.remove('visible');
+      document.getElementById('results').classList.remove('visible');
+      if (window.pywebview?.api?.resize) {
+        window.pywebview.api.resize(document.documentElement.scrollWidth, SEARCH_BAR_H);
+      }
+    }
+
+    function expand() {
+      document.getElementById('divider').classList.add('visible');
+      document.getElementById('results').classList.add('visible');
+      requestAnimationFrame(snapHeight);
+    }
+
+    // ── Initial snap on load ─────────────────────────────────────────────────
+
+    window.addEventListener('pywebviewready', function() {
+      requestAnimationFrame(function() {
+        const h = document.querySelector('.search-bar').getBoundingClientRect().height;
+        window.pywebview.api.resize(document.documentElement.scrollWidth, Math.ceil(h));
+      });
     });
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            dismiss();
+
+    // ── Search ───────────────────────────────────────────────────────────────
+
+    document.getElementById('searchInput').addEventListener('input', function() {
+      const q = this.value.trim();
+      clearTimeout(debounceTimer);
+
+      if (!q) {
+        collapse();
+        currentQuery = '';
+        return;
+      }
+
+      debounceTimer = setTimeout(() => search(q), 300);
+    });
+
+    async function search(q) {
+      currentQuery = q;
+      setStatus('SEARCHING...');
+      document.getElementById('gifGrid').innerHTML = '';
+      expand();
+
+      try {
+        const res = await fetch(
+          `${API_BASE}/search?q=${encodeURIComponent(q)}&limit=12&offset=0`,
+          { headers: { 'Content-Type': 'application/json', 'X-API-Key': API_KEY } }
+        );
+
+        if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
+        const gifs = Array.isArray(data) ? data : (data.results ?? data.gifs ?? []);
+
+        if (currentQuery !== q) return;
+
+        if (gifs.length === 0) {
+          setStatus('NO RESULTS');
+        } else {
+          setStatus(`${gifs.length} RESULT${gifs.length === 1 ? '' : 'S'}`);
+          renderGrid(gifs);
         }
-    });
-    window.addEventListener('blur', function() {
+
+        requestAnimationFrame(snapHeight);
+      } catch (e) {
+        if (currentQuery !== q) return;
+        setStatus('COULD NOT REACH SERVER');
+        requestAnimationFrame(snapHeight);
+      }
+    }
+
+    // ── Render ───────────────────────────────────────────────────────────────
+
+    function renderGrid(gifs) {
+      const grid = document.getElementById('gifGrid');
+      grid.innerHTML = '';
+
+      gifs.forEach((raw, i) => {
+        const gif = normalize(raw, i);
+        const card = document.createElement('div');
+        card.className = 'gif-card';
+        card.innerHTML = `
+          <div class="gif-card__media">
+            <div class="gif-card__placeholder">LOADING</div>
+            <img class="gif-card__img" src="${escHtml(gif.imageUrl)}" alt="${escHtml(gif.title)}" />
+          </div>
+          <div class="gif-card__actions">
+            <button class="gif-card__btn gif-card__btn--paste">COPY + PASTE</button>
+            <button class="gif-card__btn gif-card__btn--copy">COPY</button>
+          </div>
+        `;
+
+        const img = card.querySelector('img');
+        const placeholder = card.querySelector('.gif-card__placeholder');
+
+        img.addEventListener('load', () => {
+          img.classList.add('loaded');
+          placeholder.style.display = 'none';
+        });
+
+        img.addEventListener('error', () => {
+          placeholder.textContent = 'NO PREVIEW';
+        });
+
+        card.querySelector('.gif-card__btn--paste').addEventListener('click', () => {
+          copyAndPaste(gif.copyUrl || gif.imageUrl);
+        });
+
+        card.querySelector('.gif-card__btn--copy').addEventListener('click', (e) => {
+          copyOnly(gif.copyUrl || gif.imageUrl, e.currentTarget);
+        });
+
+        grid.appendChild(card);
+      });
+
+      requestAnimationFrame(snapHeight);
+    }
+
+    // ── Actions ──────────────────────────────────────────────────────────────
+
+    function copyAndPaste(url) {
+      if (window.pywebview?.api?.copy_and_paste_gif) {
+        window.pywebview.api.copy_and_paste_gif(url);
+      } else {
+        navigator.clipboard.writeText(url).catch(() => {});
         dismiss();
+      }
+    }
+
+    function copyOnly(url, btn) {
+      navigator.clipboard.writeText(url).catch(() => {});
+      if (window.pywebview?.api?.copy_gif) {
+        window.pywebview.api.copy_gif(url);
+      }
+      const orig = btn.textContent;
+      btn.textContent = 'COPIED!';
+      btn.classList.add('gif-card__btn--copied');
+      setTimeout(() => {
+        btn.textContent = orig;
+        btn.classList.remove('gif-card__btn--copied');
+      }, 1400);
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    function normalize(raw, i) {
+      return {
+        id:       raw.id ?? raw.gif_id ?? String(i),
+        title:    raw.title ?? 'Untitled GIF',
+        imageUrl: raw.imageUrl ?? raw.image_url ?? raw.cdn_url ?? raw.url ?? '',
+        copyUrl:  raw.copyUrl  ?? raw.copy_url  ?? raw.cdn_url ?? raw.url ?? '',
+      };
+    }
+
+    function setStatus(text) {
+      document.getElementById('status').textContent = text;
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;');
+    }
+
+    // ── Keyboard / blur ──────────────────────────────────────────────────────
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') dismiss();
+    });
+
+    window.addEventListener('blur', function() {
+      dismiss();
+    });
+
+    document.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
     });
   </script>
 </body>

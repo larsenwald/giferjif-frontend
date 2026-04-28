@@ -6,7 +6,6 @@ import webview
 import pystray
 import keyboard
 import win32gui
-import win32con
 from PIL import Image, ImageDraw, ImageFont
 
 
@@ -86,16 +85,19 @@ spotlight_window = None
 spotlight_lock = threading.Lock()
 
 
-def get_center_coords(win_width, win_height):
+def get_spotlight_geometry():
     import tkinter as tk
     root = tk.Tk()
     root.withdraw()
     screen_w = root.winfo_screenwidth()
     screen_h = root.winfo_screenheight()
     root.destroy()
-    x = (screen_w - win_width) // 2
-    y = (screen_h - win_height) // 2
-    return x, y
+
+    win_w = int(screen_w * 0.40)
+    x = (screen_w - win_w) // 2
+    y = int(screen_h * 0.35)
+
+    return win_w, x, y
 
 
 def force_focus_spotlight():
@@ -114,6 +116,22 @@ class SpotlightApi:
     def close_spotlight(self):
         close_spotlight()
 
+    def resize(self, width, height):
+        print(f"resize called: {width} x {height}")
+        if spotlight_window is not None:
+            spotlight_window.resize(int(width), int(height))
+
+    def copy_gif(self, url):
+        import pyperclip
+        pyperclip.copy(url)
+
+    def copy_and_paste_gif(self, url):
+        import pyperclip, pyautogui, time
+        pyperclip.copy(url)
+        close_spotlight()
+        time.sleep(0.2)
+        pyautogui.hotkey('ctrl', 'v')
+
 
 def close_spotlight():
     global spotlight_window
@@ -130,18 +148,20 @@ def open_spotlight():
             return
 
         html_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "spotlight.html")
-        x, y = get_center_coords(660, 600)
+        win_w, x, y = get_spotlight_geometry()
 
         spotlight_window = webview.create_window(
             title="GiferJif Spotlight",
             url=f"file:///{html_path}",
-            width=660,
-            height=600,
+            width=win_w,
+            height=200,
             x=x,
             y=y,
             resizable=False,
             frameless=True,
             focus=True,
+            min_size=(400, 56),
+            background_color='#1a1a1a',
             js_api=SpotlightApi(),
         )
 
