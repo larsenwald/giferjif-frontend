@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Spotlight</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      background: #ffe500;
+      border: 3px solid #000;
+      font-family: Arial, Helvetica, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 32px;
+      height: 32px;
+      border: 3px solid #000;
+      background: #fff;
+      font-size: 1rem;
+      font-weight: 900;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-btn:hover {
+      background: #ff5a5f;
+      color: #fff;
+    }
+
+    p {
+      font-size: 1.5rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <button class="close-btn" onclick="dismiss()">✕</button>
+  <p>Spotlight here</p>
+
+  <script>
+    function dismiss() {
+      if (window.pywebview?.api?.close_spotlight) {
+        window.pywebview.api.close_spotlight();
+      }
+    }
+  </script>
+</body>
+</html>

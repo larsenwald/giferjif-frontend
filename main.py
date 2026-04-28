@@ -3,6 +3,7 @@ import sys
 import threading
 import webview
 import pystray
+import keyboard
 from PIL import Image, ImageDraw, ImageFont
 
 
@@ -11,20 +12,15 @@ def create_tray_icon():
     img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
     draw.rounded_rectangle([0, 0, size - 1, size - 1], radius=12, fill=(0, 0, 0, 255))
-
     try:
         font = ImageFont.truetype("arialbd.ttf", 22)
     except Exception:
         font = ImageFont.load_default()
-
     text = "GIF"
     bbox = draw.textbbox((0, 0), text, font=font)
-    text_w = bbox[2] - bbox[0]
-    text_h = bbox[3] - bbox[1]
-    x = (size - text_w) // 2
-    y = (size - text_h) // 2 - 2
+    x = (size - (bbox[2] - bbox[0])) // 2
+    y = (size - (bbox[3] - bbox[1])) // 2 - 2
     draw.text((x, y), text, fill=(255, 255, 255), font=font)
-
     return img
 
 
@@ -79,6 +75,58 @@ def run_tray():
     tray_icon.run()
 
 
+# ── Spotlight ─────────────────────────────────────────────────────────────────
+
+spotlight_window = None
+spotlight_lock = threading.Lock()
+
+
+class SpotlightApi:
+    def close_spotlight(self):
+        close_spotlight()
+
+
+def close_spotlight():
+    global spotlight_window
+    with spotlight_lock:
+        if spotlight_window is not None:
+            spotlight_window.destroy()
+            spotlight_window = None
+
+
+def open_spotlight():
+    global spotlight_window
+    with spotlight_lock:
+        if spotlight_window is not None:
+            return
+
+        html_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "spotlight.html")
+
+        spotlight_window = webview.create_window(
+            title="GiferJif Spotlight",
+            url=f"file:///{html_path}",
+            width=660,
+            height=600,
+            resizable=False,
+            frameless=True,
+            on_top=True,
+            js_api=SpotlightApi(),
+        )
+
+        def on_spotlight_closed():
+            global spotlight_window
+            with spotlight_lock:
+                spotlight_window = None
+
+        spotlight_window.events.closed += on_spotlight_closed
+
+
+def hotkey_handler():
+    threading.Thread(target=open_spotlight, daemon=True).start()
+
+
+# ── Main ──────────────────────────────────────────────────────────────────────
+
 if __name__ == "__main__":
     dist_dir = os.path.dirname(os.path.abspath(__file__))
     index = os.path.join(dist_dir, "dist", "index.html")
@@ -98,7 +146,8 @@ if __name__ == "__main__":
 
     window.events.closing += on_closing
 
-    # Tray starts immediately on launch
+    keyboard.add_hotkey("ctrl+shift+g", hotkey_handler)
+
     threading.Thread(target=run_tray, daemon=True).start()
 
     webview.start()
