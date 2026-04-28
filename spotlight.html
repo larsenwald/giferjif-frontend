@@ -59,6 +59,14 @@
         e.preventDefault();
         e.stopPropagation();
     });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            dismiss();
+        }
+    });
+    window.addEventListener('blur', function() {
+        dismiss();
+    });
   </script>
 </body>
 </html>
