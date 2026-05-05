@@ -10,7 +10,7 @@
       width: 100vw;
       height: auto;
       overflow: hidden;
-      background: #1a1a1a;
+      background: #161b27;
       font-family: Arial, Helvetica, sans-serif;
     }
 
@@ -26,7 +26,7 @@
 
     .search-icon {
       font-size: 1.3rem;
-      color: #555;
+      color: #6b7a99;
       flex-shrink: 0;
       user-select: none;
     }
@@ -38,19 +38,19 @@
       background: transparent;
       font-size: 1.15rem;
       font-weight: 700;
-      color: #fff;
-      caret-color: #ffe500;
+      color: #e8eaf0;
+      caret-color: #00d4aa;
     }
 
-    .search-input::placeholder { color: #444; }
+    .search-input::placeholder { color: #3a4460; }
 
     .close-btn {
       flex-shrink: 0;
       width: 26px;
       height: 26px;
-      border: 2px solid #333;
+      border: 2px solid rgba(255,255,255,0.08);
       background: transparent;
-      color: #666;
+      color: #6b7a99;
       font-size: 0.7rem;
       font-weight: 900;
       cursor: pointer;
@@ -65,11 +65,11 @@
     /* ── Divider ── */
     .divider {
       height: 0;
-      background: #2a2a2a;
+      background: rgba(255,255,255,0.06);
       transition: height 0.1s;
     }
 
-    .divider.visible { height: 2px; }
+    .divider.visible { height: 1px; }
 
     /* ── Results ── */
     .results {
@@ -85,7 +85,7 @@
       font-size: 0.72rem;
       font-weight: 900;
       text-transform: uppercase;
-      color: #444;
+      color: #3a4460;
       letter-spacing: 0.06em;
       padding: 0 2px 10px;
     }
@@ -99,19 +99,19 @@
 
     /* ── Card ── */
     .gif-card {
-      border: 2px solid #2a2a2a;
-      background: #222;
+      border: 2px solid rgba(255,255,255,0.06);
+      background: #1e2433;
       overflow: hidden;
       cursor: pointer;
       transition: border-color 0.12s, transform 0.12s;
     }
 
-    .gif-card:hover { border-color: #ffe500; transform: translateY(-2px); }
+    .gif-card:hover { border-color: #00d4aa; transform: translateY(-2px); }
 
     .gif-card__media {
       width: 100%;
       height: 100px;
-      background: #2a2a2a;
+      background: #232a3b;
       overflow: hidden;
       position: relative;
     }
@@ -136,9 +136,9 @@
       justify-content: center;
       font-size: 0.6rem;
       font-weight: 800;
-      color: #444;
+      color: #3a4460;
       background: repeating-linear-gradient(
-        135deg, #222, #222 8px, #272727 8px, #272727 16px
+        135deg, #1e2433, #1e2433 8px, #232a3b 8px, #232a3b 16px
       );
     }
 
@@ -151,7 +151,7 @@
     .gif-card__btn {
       flex: 1;
       padding: 5px 2px;
-      border: 2px solid #333;
+      border: 2px solid rgba(255,255,255,0.06);
       font-size: 0.6rem;
       font-weight: 900;
       text-transform: uppercase;
@@ -161,23 +161,23 @@
     }
 
     .gif-card__btn--paste {
-      background: #ffe500;
-      color: #000;
-      border-color: #ffe500;
+      background: #00d4aa;
+      color: #0f1117;
+      border-color: #00d4aa;
     }
 
-    .gif-card__btn--paste:hover { background: #ffd000; border-color: #ffd000; }
+    .gif-card__btn--paste:hover { background: #00bfa0; border-color: #00bfa0; }
 
     .gif-card__btn--copy {
       background: transparent;
-      color: #888;
+      color: #6b7a99;
     }
 
-    .gif-card__btn--copy:hover { border-color: #666; color: #fff; }
+    .gif-card__btn--copy:hover { border-color: #6b7a99; color: #e8eaf0; }
 
     .gif-card__btn--copied {
-      background: #11a34a !important;
-      border-color: #11a34a !important;
+      background: #3b82f6 !important;
+      border-color: #3b82f6 !important;
       color: #fff !important;
     }
   </style>
@@ -202,8 +202,8 @@
   </div>
 
   <script>
-    const API_BASE = 'http://5.78.197.194:8000';
-    const API_KEY  = 'test-key-534242958405389';
+    const KLIPY_KEY = '2BALsUj12qaYJLTPeTY0G5aXIs3XpUkKwz5AeUAS9746yeWoKs3Tl6fTOSOcWfIr';
+    const API_BASE  = `https://api.klipy.com/api/v1/${KLIPY_KEY}`;
     const SEARCH_BAR_H = 56;
     const MAX_H = 560;
 
@@ -274,13 +274,12 @@
 
       try {
         const res = await fetch(
-          `${API_BASE}/search?q=${encodeURIComponent(q)}&limit=12&offset=0`,
-          { headers: { 'Content-Type': 'application/json', 'X-API-Key': API_KEY } }
+          `${API_BASE}/gifs/search?q=${encodeURIComponent(q)}&per_page=12`
         );
 
         if (!res.ok) throw new Error(res.status);
         const data = await res.json();
-        const gifs = Array.isArray(data) ? data : (data.results ?? data.gifs ?? []);
+        const gifs = data.data?.data ?? [];
 
         if (currentQuery !== q) return;
 
@@ -375,10 +374,10 @@
 
     function normalize(raw, i) {
       return {
-        id:       raw.id ?? raw.gif_id ?? String(i),
+        id:       String(raw.id ?? raw.slug ?? i),
         title:    raw.title ?? 'Untitled GIF',
-        imageUrl: raw.imageUrl ?? raw.image_url ?? raw.cdn_url ?? raw.url ?? '',
-        copyUrl:  raw.copyUrl  ?? raw.copy_url  ?? raw.cdn_url ?? raw.url ?? '',
+        imageUrl: raw.file?.sm?.gif?.url ?? raw.file?.md?.gif?.url ?? '',
+        copyUrl:  raw.file?.hd?.gif?.url ?? raw.file?.md?.gif?.url ?? '',
       };
     }
 

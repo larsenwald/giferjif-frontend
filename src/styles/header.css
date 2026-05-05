@@ -20,11 +20,18 @@
   line-height: 1;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: var(--color-black);
+  color: var(--color-white);
 }
 
 .header__title-accent {
-  color: var(--color-blue);
+  color: var(--color-accent);
+}
+
+.header__actions {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .favorites-button {
@@ -34,32 +41,59 @@
   gap: 8px;
   padding: 12px 18px;
   border: var(--border-main);
-  box-shadow: var(--shadow-main);
-  background-color: var(--color-red);
-  color: var(--color-white);
+  background-color: transparent;
+  color: var(--color-text-muted);
   font-size: 0.95rem;
   font-weight: 900;
   text-transform: uppercase;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+  transition: transform 0.12s ease, border-color 0.12s ease, color 0.12s ease;
 }
 
 .favorites-button:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--color-black);
+  border-color: var(--color-red);
+  color: var(--color-red);
 }
 
 .favorites-button:active {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0 var(--color-black);
+  transform: translate(1px, 1px);
 }
 
 .favorites-button--active {
-  background-color: var(--color-blue);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
 .favorites-button__icon {
   font-size: 1rem;
   line-height: 1;
+}
+
+.trending-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border: var(--border-main);
+  background-color: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  transition: transform 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.trending-button:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.trending-button:active {
+  transform: translate(1px, 1px);
+}
+
+.trending-button--active {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
 @media (max-width: 768px) {
@@ -75,47 +109,11 @@
   }
 
   .header__title,
-  .favorites-button {
+  .header__actions {
     justify-self: center;
   }
 
   .header__title {
     font-size: 2rem;
   }
-}
-
-.header__actions {
-  justify-self: end;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.trending-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 18px;
-  border: var(--border-main);
-  box-shadow: var(--shadow-main);
-  background-color: #ff7a18;
-  color: var(--color-white);
-  font-size: 0.95rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
-}
-
-.trending-button:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--color-black);
-}
-
-.trending-button:active {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0 var(--color-black);
-}
-
-.trending-button--active {
-  background-color: #ff3c00;
 }

@@ -85,6 +85,12 @@ spotlight_window = None
 spotlight_lock = threading.Lock()
 
 
+def get_base_dir():
+    if getattr(sys, 'frozen', False):
+        return sys._MEIPASS
+    return os.path.dirname(os.path.abspath(__file__))
+
+
 def get_spotlight_geometry():
     import tkinter as tk
     root = tk.Tk()
@@ -147,7 +153,7 @@ def open_spotlight():
         if spotlight_window is not None:
             return
 
-        html_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "spotlight.html")
+        html_path = os.path.join(get_base_dir(), "spotlight.html")
         win_w, x, y = get_spotlight_geometry()
 
         spotlight_window = webview.create_window(
@@ -161,7 +167,7 @@ def open_spotlight():
             frameless=True,
             focus=True,
             min_size=(400, 56),
-            background_color='#1a1a1a',
+            background_color='#161b27',
             js_api=SpotlightApi(),
         )
 
@@ -181,7 +187,7 @@ def hotkey_handler():
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    dist_dir = os.path.dirname(os.path.abspath(__file__))
+    dist_dir = get_base_dir()
     index = os.path.join(dist_dir, "dist", "index.html")
 
     if not os.path.exists(index):

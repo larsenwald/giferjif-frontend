@@ -1,6 +1,136 @@
-.gif-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 28px 26px;
-  align-items: start;
+.gif-card {
+  background-color: var(--color-light-gray);
+  border: var(--border-main);
+  box-shadow: var(--shadow-main);
+  overflow: hidden;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.gif-card:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--color-accent);
+}
+
+.gif-card__media {
+  position: relative;
+  width: 100%;
+  height: 190px;
+  border-bottom: var(--border-main);
+  background-color: var(--color-placeholder);
+  overflow: hidden;
+}
+
+.gif-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.gif-card__image--visible {
+  opacity: 1;
+}
+
+.gif-card__placeholder {
+  width: 100%;
+  height: 100%;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      #1e2433 0px,
+      #1e2433 14px,
+      #232a3b 14px,
+      #232a3b 28px
+    );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gif-card__placeholder-text {
+  padding: 6px 10px;
+  background-color: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--color-placeholder-text);
+}
+
+.gif-card__content {
+  padding: 14px 14px 12px;
+}
+
+.gif-card__title {
+  min-height: 54px;
+  margin: 0 0 14px;
+  font-size: 1.1rem;
+  font-weight: 900;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+.gif-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gif-card__copy-button,
+.gif-card__favorite-button {
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.gif-card__copy-button {
+  flex: 1;
+  padding: 10px 12px;
+  border: var(--border-main);
+  box-shadow: var(--shadow-main);
+  background-color: var(--color-accent);
+  color: #0f1117;
+  font-size: 1rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.gif-card__copy-button:hover,
+.gif-card__favorite-button:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.gif-card__copy-button:active,
+.gif-card__favorite-button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 rgba(0, 212, 170, 0.2);
+}
+
+.gif-card__copy-button--copied {
+  background-color: #3b82f6;
+  color: var(--color-white);
+}
+
+.gif-card__favorite-button {
+  width: 42px;
+  height: 42px;
+  border: var(--border-main);
+  box-shadow: var(--shadow-main);
+  background-color: transparent;
+  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.gif-card__favorite-button--active {
+  background-color: var(--color-red);
+  color: var(--color-white);
+  border-color: var(--color-red);
 }
